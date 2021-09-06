@@ -32,10 +32,13 @@ function onFormSubmit(e) {
   e.preventDefault();
    refs.gallery.innerHTML=""
   const input = e.currentTarget.elements.query;
+  apiService.querySearch = input.value;
+  refs.loadMoreBtn.classList.remove('invisible')
   if (input.value === "") {
+    refs.loadMoreBtn.classList.add('invisible');
     return
   } 
-  apiService.querySearch = input.value;
+
   try {
     apiService.fetchImages().then(res => refs.gallery.insertAdjacentHTML("beforeend", cardTemplate(res)));
     
