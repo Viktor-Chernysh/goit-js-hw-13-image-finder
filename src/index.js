@@ -13,15 +13,18 @@ async function loadMore() {
   if (refs.input.value ==="") {
     return
   }
-  try {
-    await apiService.fetchImages().then(res => refs.gallery.insertAdjacentHTML("beforeend", cardTemplate(res)));
-  } catch (error) {
-    alert(error);
-  }
+  await tryToFetch()
   // const element = document.getElementById('box');
   // element.scrollIntoView({block: "center", behavior: "smooth"});
   setTimeout(scroll, 500)
 };
+function tryToFetch() {
+  try {
+     apiService.fetchImages().then(res => refs.gallery.insertAdjacentHTML("beforeend", cardTemplate(res)));
+  } catch (error) {
+    alert(error);
+  }
+}
 function scroll() {
   const element = document.getElementById('box');
   element.scrollIntoView({block: "center", behavior: "smooth"});
@@ -39,13 +42,7 @@ function onFormSubmit(e) {
     return
   } 
 
-  try {
-    apiService.fetchImages().then(res => refs.gallery.insertAdjacentHTML("beforeend", cardTemplate(res)));
-    
-  } catch (error) {
-    console.log(error);
-    alert("Ooops! Somesing gooing wrong!!!")
-  }
+  tryToFetch()
   
   // input.value=""
 };
@@ -65,5 +62,12 @@ function OnImgClick(e) {
 		<img width="1200" src="${imgURL}">
         </div>
 	`).show()
-}
+};
+window.addEventListener('scroll', () => {
+  const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+  if (clientHeight + scrollTop >= scrollHeight) {
+    console.log("to the bottom");
+    tryToFetch()
+ }
+})
 
