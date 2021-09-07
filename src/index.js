@@ -3,7 +3,8 @@ import apiService from './js/apiService';
 import refs from './js/refs';
 import cardTemplate from "./templates/card-template.hbs";
 import * as basicLightbox from 'basiclightbox';
-
+import { error, alert } from '../node_modules/@pnotify/core/dist/PNotify.js';
+import '@pnotify/core/dist/BrightTheme.css';
 
 refs.form.addEventListener('submit', onFormSubmit);
 refs.loadMoreBtn.addEventListener('click', loadMore);
@@ -20,9 +21,17 @@ async function loadMore() {
 };
 function tryToFetch() {
   try {
-     apiService.fetchImages().then(res => refs.gallery.insertAdjacentHTML("beforeend", cardTemplate(res)));
-  } catch (error) {
-    alert(error);
+    apiService.fetchImages().then(res => {
+      if (res.length === 0) {
+        refs.loadMoreBtn.classList.add('invisible');
+        error({
+      text: "There is no matches, try again!",
+      delay: 3000,
+    })}
+      refs.gallery.insertAdjacentHTML("beforeend", cardTemplate(res))
+    });
+  } catch (err) {
+    alert(err);
   }
 }
 function scroll() {
@@ -33,23 +42,31 @@ function scroll() {
 
 function onFormSubmit(e) {
   e.preventDefault();
-   refs.gallery.innerHTML=""
+  refs.gallery.innerHTML = "";
   const input = e.currentTarget.elements.query;
   apiService.querySearch = input.value;
-  refs.loadMoreBtn.classList.remove('invisible')
+  refs.loadMoreBtn.classList.remove('invisible');
+  if (input.value !== "") {
+    refs.clear.classList.remove('invisible');
+  }
   if (input.value === "") {
+    alert({
+      text: 'Please enter your request!',
+      delay: 4000,
+  });
     refs.loadMoreBtn.classList.add('invisible');
     return
   } 
-
-  tryToFetch()
-  
+  tryToFetch();
+ 
   // input.value=""
 };
 
 function onClickClear() {
+  refs.clear.classList.add('invisible')
   refs.input.value = "";
   apiService.resetPage();
+  
 };
 
 refs.gallery.addEventListener('click', OnImgClick)
@@ -65,9 +82,8 @@ function OnImgClick(e) {
 };
 window.addEventListener('scroll', () => {
   const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-  if (clientHeight + scrollTop >= scrollHeight) {
-    console.log("to the bottom");
-    tryToFetch()
+  if (clientHeight + scrollTop >= scrollHeight ) {
+    tryToFetch();
  }
 })
 
